@@ -8,6 +8,7 @@ import static com.velocitypowered.proxy.protocol.util.PluginMessageUtil.construc
 import com.google.common.collect.ImmutableList;
 import com.velocitypowered.api.event.command.CommandExecuteEvent.CommandResult;
 import com.velocitypowered.api.event.connection.PluginMessageEvent;
+import com.velocitypowered.api.event.player.PlayerBrandEvent;
 import com.velocitypowered.api.event.player.PlayerChannelRegisterEvent;
 import com.velocitypowered.api.event.player.PlayerChatEvent;
 import com.velocitypowered.api.event.player.PlayerResourcePackStatusEvent;
@@ -24,6 +25,7 @@ import com.velocitypowered.proxy.connection.backend.BackendConnectionPhases;
 import com.velocitypowered.proxy.connection.backend.BungeeCordMessageResponder;
 import com.velocitypowered.proxy.connection.backend.VelocityServerConnection;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
+import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import com.velocitypowered.proxy.protocol.StateRegistry;
 import com.velocitypowered.proxy.protocol.packet.BossBar;
 import com.velocitypowered.proxy.protocol.packet.Chat;
@@ -211,8 +213,14 @@ public class ClientPlaySessionHandler implements MinecraftSessionHandler {
         player.getKnownChannels().removeAll(PluginMessageUtil.getChannels(packet));
         backendConn.write(packet.retain());
       } else if (PluginMessageUtil.isMcBrand(packet)) {
-        backendConn.write(PluginMessageUtil
-            .rewriteMinecraftBrand(packet, server.getVersion(), player.getProtocolVersion()));
+        PluginMessage brandMsg = PluginMessageUtil
+                .rewriteMinecraftBrand(packet, server.getVersion(), player.getProtocolVersion());
+        backendConn.write(brandMsg);
+
+        //Presumes 1.8+ because of fork.
+        String brand = ProtocolUtils.readString(packet.content().slice());
+        PlayerBrandEvent event = new PlayerBrandEvent(player, brand);
+        server.getEventManager().fireAndForget(event);
       } else if (BungeeCordMessageResponder.isBungeeCordMessage(packet)) {
         return true;
       } else {
