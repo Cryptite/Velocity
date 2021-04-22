@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2018 Velocity Contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.velocitypowered.proxy.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
@@ -26,6 +43,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
@@ -465,8 +483,8 @@ public class VelocityConfiguration implements ProxyConfig {
         motd,
         maxPlayers,
         onlineMode,
-        announceForge,
         preventClientProxyConnections,
+        announceForge,
         forwardingMode,
         forwardingSecret,
         kickExisting,
@@ -583,9 +601,11 @@ public class VelocityConfiguration implements ProxyConfig {
         Map<String, List<String>> forcedHosts = new HashMap<>();
         for (UnmodifiableConfig.Entry entry : config.entrySet()) {
           if (entry.getValue() instanceof String) {
-            forcedHosts.put(entry.getKey(), ImmutableList.of(entry.getValue()));
+            forcedHosts.put(entry.getKey().toLowerCase(Locale.ROOT),
+                ImmutableList.of(entry.getValue()));
           } else if (entry.getValue() instanceof List) {
-            forcedHosts.put(entry.getKey(), ImmutableList.copyOf((List<String>) entry.getValue()));
+            forcedHosts.put(entry.getKey().toLowerCase(Locale.ROOT),
+                ImmutableList.copyOf((List<String>) entry.getValue()));
           } else {
             throw new IllegalStateException(
                 "Invalid value of type " + entry.getValue().getClass() + " in forced hosts!");
